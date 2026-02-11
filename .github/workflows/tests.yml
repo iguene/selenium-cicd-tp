@@ -24,7 +24,7 @@ jobs:
           cd tests
           pip install -r requierements.txt
 
-      # 🔽 Forcer le téléchargement de chromedriver
+      # 🔽 Télécharger ChromeDriver (pour CI)
       - name: Télécharger ChromeDriver
         run: |
           python - << 'PY'
@@ -55,4 +55,4 @@ jobs:
       - name: Lancer les tests Selenium
         run: |
           cd tests
-          pytest test_selenium.py -v --html=report.html --self-conta_
+          pytest test_selenium.py -v --html=report.html
