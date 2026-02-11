@@ -24,28 +24,35 @@ jobs:
           cd tests
           pip install -r requierements.txt
 
-      - name: Fix webdriver-manager (THIRD_PARTY_NOTICES)
+      # 🔽 Forcer le téléchargement de chromedriver
+      - name: Télécharger ChromeDriver
         run: |
-          set -e
+          python - << 'PY'
+          from webdriver_manager.chrome import ChromeDriverManager
+          ChromeDriverManager().install()
+          print("ChromeDriver téléchargé")
+          PY
+
+      # 🔽 Fix du bug THIRD_PARTY_NOTICES
+      - name: Fix webdriver-manager
+        run: |
           python - << 'PY'
           import os, glob, shutil
 
           base = os.path.expanduser("~/.wdm/drivers/chromedriver")
           notices = glob.glob(base + "/**/THIRD_PARTY_NOTICES.chromedriver", recursive=True)
-          if not notices:
-              raise SystemExit("THIRD_PARTY_NOTICES.chromedriver introuvable (webdriver-manager n'a peut-être pas téléchargé)")
-          notice = sorted(notices)[-1]
-          d = os.path.dirname(notice)
-          candidates = glob.glob(d + "/**/chromedriver", recursive=True) + glob.glob(d + "/**/chromedriver.exe", recursive=True)
-          if not candidates:
-              raise SystemExit(f"chromedriver introuvable dans {d}")
-          driver = candidates[0]
-          shutil.copyfile(driver, notice)
-          os.chmod(notice, 0o755)
-          print("OK: remplacé", notice, "par", driver)
+
+          if notices:
+              notice = sorted(notices)[-1]
+              d = os.path.dirname(notice)
+              drivers = glob.glob(d + "/**/chromedriver", recursive=True)
+              if drivers:
+                  shutil.copyfile(drivers[0], notice)
+                  os.chmod(notice, 0o755)
+                  print("Fix appliqué")
           PY
 
       - name: Lancer les tests Selenium
         run: |
           cd tests
-          pytest test_selenium.py -v --html=report.html --self-contained-html
+          pytest test_selenium.py -v --html=report.html --self-conta_
